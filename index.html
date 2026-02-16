@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>GTFO TERMINAL TRAINER - PRO</title>
+    <title>GTFO TERMINAL TRAINER - ULTIMATE EDITION</title>
     <style>
         :root {
             --bg: #01080e; --main: #00e5ff; --text: #ffffff;
@@ -22,7 +22,6 @@
             box-shadow: 0 20px 80px rgba(0, 0, 0, 0.8), 0 0 40px rgba(0, 229, 255, 0.05);
         }
         
-        /* Кнопки в углах */
         .ui-btn {
             position: absolute; top: 25px; font-size: 0.7rem; 
             cursor: pointer; border: 1px solid var(--dim); padding: 8px 18px; 
@@ -99,7 +98,8 @@
         .opt.active { border-color: var(--main); background: rgba(0, 229, 255, 0.1); color: var(--text); }
         .opt.special.active { border-color: #ff9800; color: #ff9800; background: rgba(255, 152, 0, 0.1); }
         .opt.danger.active { border-color: var(--err); color: var(--err); background: rgba(255, 77, 77, 0.1); }
-        
+        .opt.disabled { opacity: 0.3; pointer-events: none; filter: grayscale(1); cursor: not-allowed; }
+
         .start-btn { 
             margin-top: 10px; padding: 20px 100px; border: none; 
             cursor: pointer; font-weight: 900; letter-spacing: 5px; border-radius: 20px;
@@ -124,7 +124,7 @@
         
         <div class="menu-section">
             <div class="menu-label">Сложность</div>
-            <div class="opt-group">
+            <div class="opt-group" id="diff-group">
                 <div class="opt" onclick="setDiff('EASY', this)">Легко</div>
                 <div class="opt active" onclick="setDiff('NORM', this)">Нормально</div>
                 <div class="opt" onclick="setDiff('HARD', this)">Сложно</div>
@@ -191,7 +191,7 @@ let soundEnabled = true;
 let audioCtx = null;
 
 const WORDS = ["VOID", "CORE", "RISK", "DATA", "FLOW", "SYNC", "LINK", "GRID", "NODE", "BASE", "ZULU", "DARK", "BEAM", "CELL", "BONE", "DISK", "PLUG", "GATE", "ZONE", "FAST", "DEBT", "SOUL", "GRIT", "WOLF", "ZERO", "PATH", "MIND", "SCAN", "WORK", "HELL", "DUST", "ROCK", "SHIP", "SALT", "WIND", "GOLD", "IRON", "STAY", "KILL", "LIFE", "HOPE", "RARE", "DROP", "MIST", "COAL", "GEAR", "FUEL", "TANK", "PIPE", "WIRE", "BOLT", "JUMP", "LIFT", "STOP", "LOAD", "SAVE", "EXIT", "BLUE", "FIRE", "BOMB"];
-const QUEST_OBJS = ["CELL", "TURBINE", "CARGO", "HSU", "NEONATE_HSU", "GENERATOR", "TERMINAL", "DISINFECT_STATION"];
+const QUEST_OBJS = ["CELL", "TURBINE", "CARGO", "HSU", "NEONATE_HSU_", "GENERATOR", "TERMINAL", "DISINFECT_STATION"];
 const RESOURCES = ["AMMOPACK", "MEDIPACK", "TOOL_REFILL", "DISINFECT_PACK"];
 const COMMANDS = ["LIST", "QUERY", "PING", "LOGS", "READ", "REACTOR_STARTUP", "REACTOR_SHUTDOWN", "REACTOR_VERIFY", "UPLINK_CONNECT", "UPLINK_VERIFY"];
 
@@ -201,7 +201,15 @@ const TIMERS = {
     HARD: { LIST:10, QUERY:10, PING:10, LOGS:5,  READ:10, REACTOR_STARTUP:10, REACTOR_SHUTDOWN:10, REACTOR_VERIFY:10, UPLINK_CONNECT:10, UPLINK_VERIFY:15 }
 };
 
-const LIST_LABELS = { "A":'все объекты и ресурсы', "W":'квестовые объекты', "U":'квестовые объекты и ресурсы', "RE":'ресурсы', "Y":'ключи', "ID":'персональные идентификаторы', "CELL":'батареи' };
+const LIST_LABELS = { 
+    "A": "ВСЕ ОБЪЕКТЫ И РЕСУРСЫ", 
+    "W": "КВЕСТОВЫЕ ОБЪЕКТЫ", 
+    "U": "КВЕСТОВЫЕ ОБЪЕКТЫ И РЕСУРСЫ", 
+    "RE": "РЕСУРСЫ", 
+    "Y": "КЛЮЧИ", 
+    "ID": "ПЕРСОНАЛЬНЫЕ ИДЕНТИФИКАТОРЫ", 
+    "CELL": "БАТАРЕИ" 
+};
 
 let state = { 
     diff: 'NORM', 
@@ -227,10 +235,48 @@ function toggleSound() {
     document.getElementById('sound-btn').classList.toggle('on', soundEnabled);
 }
 
-function setDiff(d, el) { state.diff = d; el.parentNode.querySelectorAll('.opt').forEach(b => b.classList.remove('active')); el.classList.add('active'); }
-function setMode(m, el) { state.mode = m; el.parentNode.querySelectorAll('.opt').forEach(b => b.classList.remove('active')); el.classList.add('active'); }
-function toggleHardcore(el) { state.hardcore = !state.hardcore; el.classList.toggle('active', state.hardcore); el.innerText = `РЕЖИМ HARDCORE: ${state.hardcore ? 'ВКЛ' : 'ВЫКЛ'}`; }
-function toggleHighlight(el) { state.showHints = !state.showHints; el.classList.toggle('active', state.showHints); el.innerText = `Подсветка ошибок: ${state.showHints ? 'ВКЛ' : 'ВЫКЛ'}`; }
+function setDiff(d, el) { 
+    if (state.mode === 'ZEN') return;
+    state.diff = d; 
+    el.parentNode.querySelectorAll('.opt').forEach(b => b.classList.remove('active')); 
+    el.classList.add('active'); 
+}
+
+function setMode(m, el) { 
+    state.mode = m; 
+    el.parentNode.querySelectorAll('.opt').forEach(b => b.classList.remove('active')); 
+    el.classList.add('active'); 
+    
+    const diffOpts = document.querySelectorAll('#diff-group .opt');
+    if (m === 'ZEN') {
+        diffOpts.forEach(btn => btn.classList.add('disabled'));
+    } else {
+        diffOpts.forEach(btn => btn.classList.remove('disabled'));
+    }
+}
+
+function toggleHardcore(el) { 
+    state.hardcore = !state.hardcore; 
+    el.classList.toggle('active', state.hardcore); 
+    el.innerText = `РЕЖИМ HARDCORE: ${state.hardcore ? 'ВКЛ' : 'ВЫКЛ'}`; 
+    
+    const hintBtn = document.getElementById('hint-toggle');
+    if (state.hardcore) {
+        state.showHints = false;
+        hintBtn.classList.remove('active');
+        hintBtn.innerText = `Подсветка ошибок: ВЫКЛ`;
+        hintBtn.classList.add('disabled');
+    } else {
+        hintBtn.classList.remove('disabled');
+    }
+}
+
+function toggleHighlight(el) { 
+    if (state.hardcore) return;
+    state.showHints = !state.showHints; 
+    el.classList.toggle('active', state.showHints); 
+    el.innerText = `Подсветка ошибок: ${state.showHints ? 'ВКЛ' : 'ВЫКЛ'}`; 
+}
 
 function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
 function genFileName() {
@@ -245,7 +291,7 @@ function generateTask() {
     
     const zNum = rand(1, 999); const zStr = `ZONE_${zNum}`;
     const word = WORDS[rand(0, WORDS.length-1)];
-    const qObj = `${QUEST_OBJS[rand(0, QUEST_OBJS.length-1)]}_${rand(1, 999)}`;
+    const qObj = `${QUEST_OBJS[rand(0, QUEST_OBJS.length-1)]}${rand(1, 999)}`;
     const rObj = `${RESOURCES[rand(0, RESOURCES.length-1)]}_${rand(1, 999)}`;
     const useZone = Math.random() > 0.5;
 
@@ -267,16 +313,16 @@ function generateTask() {
                 const tCode = ["X","Y","Z"][rand(0,2)]+rand(1,9).toString().padStart(2,'0'); 
                 let pairs = []; for(let i=0;i<6;i++){ const c = (i===0)?tCode:["X","Y","Z"][rand(0,2)]+rand(1,9).toString().padStart(2,'0'); pairs.push(`${c}:${WORDS[rand(0,WORDS.length-1)]}`); }
                 pairs.sort(()=>Math.random()-0.5); uplinkStr=pairs.join("   "); const corW=pairs.find(p=>p.startsWith(tCode)).split(":")[1];
-                cmd=`UPLINK_VERIFY ${corW}`; desc=`Подтверждение создания подключения (Код: ${tCode})`; displayCmd = `UPLINK_VERIFY [PASSWORD]`; alts=[cmd]; break;
-        case 10: tKey="REACTOR_VERIFY"; cmd=`REACTOR_VERIFY ${word}`; desc=`Подтверждение запуска реактора: ${word}`; displayCmd = cmd; break;
+                cmd=`UPLINK_VERIFY ${corW}`; desc=`Подтверждение СОЗДАНИЯ ПОДКЛЮЧЕНИЯ с кодом: ${tCode}`; 
+                displayCmd = `UPLINK_VERIFY ${tCode}`; alts=[cmd]; break;
+        case 10: tKey="REACTOR_VERIFY"; cmd=`REACTOR_VERIFY ${word}`; desc=`Подтверждение ЗАПУСКА РЕАКТОРА с кодом: ${word}`; displayCmd = cmd; break;
         case 11: tKey="UPLINK_CONNECT"; const ip=`${rand(10,255)}.${rand(0,255)}.${rand(0,255)}.${rand(1,254)}`; cmd=`UPLINK_CONNECT ${ip}`; desc=`Создать подключение с ${ip}`; displayCmd = cmd; break;
         case 12: tKey="LOGS"; cmd=`LOGS`; desc=`Вывести логи находящиеся в терминале`; displayCmd = cmd; break;
-        case 13: tKey="REACTOR_STARTUP"; cmd=`REACTOR_STARTUP`; desc=`Инициализация последовательности запуска реактора`; displayCmd = cmd; break;
-        case 14: tKey="REACTOR_SHUTDOWN"; cmd=`REACTOR_SHUTDOWN`; desc=`Инициализация последовательности выключения реактора`; displayCmd = cmd; break;
+        case 13: tKey="REACTOR_STARTUP"; cmd=`REACTOR_STARTUP`; desc=`Инициализация последовательности ЗАПУСКА реактора`; displayCmd = cmd; break;
+        case 14: tKey="REACTOR_SHUTDOWN"; cmd=`REACTOR_SHUTDOWN`; desc=`Инициализация последовательности ВЫКЛЮЧЕНИЯ реактора`; displayCmd = cmd; break;
     }
     
     if(alts.length === 0) alts = [cmd];
-    // Если Hardcore - используем время HARD и скрываем текст
     const finalTime = state.hardcore ? TIMERS['HARD'][tKey] : TIMERS[state.diff][tKey];
     return { cmd, displayCmd, alts, desc, uplink: uplinkStr, time: finalTime };
 }
@@ -306,7 +352,6 @@ function nextTask() {
     if (state.qIndex >= 10) { finishSession(); return; }
     state.phase = 'INPUT'; state.activeTask = generateTask(); state.startTime = Date.now();
     
-    // В хардкоре команда всегда скрыта
     document.getElementById('cmd-text').innerText = (state.hardcore) ? "[ДАННЫЕ ЗАШИФРОВАНЫ]" : state.activeTask.displayCmd;
     document.getElementById('desc-text').innerText = state.activeTask.desc;
     
@@ -388,7 +433,6 @@ function updateHighlight() {
     const val = input.value.toUpperCase(); const alts = state.activeTask.alts;
     const isValidStart = alts.some(a => a.startsWith(val));
     
-    // Если подсветка ВЫКЛЮЧЕНА, мы просто рисуем прозрачный текст для сохранения позиции курсора
     if (!state.showHints) {
         document.getElementById('highlight-layer').innerHTML = `<span style="color:transparent">${val}</span>`;
         return;
@@ -402,11 +446,41 @@ function updateHighlight() {
 }
 
 function handleTab() {
-    const val = input.value.toUpperCase(); if (!val) return;
-    const parts = val.split(" "); const lastPart = parts[parts.length - 1];
-    let suggestions = (parts.length === 1) ? COMMANDS : (parts[0] === "LIST" ? ["A", "W", "U", "RE", "Y", "ID", "CELL", "ZONE_"] : [...QUEST_OBJS, ...RESOURCES]);
+    const val = input.value.toUpperCase();
+    const parts = val.split(" ");
+    const lastPart = parts[parts.length - 1];
+    if (!lastPart && val.length > 0) return;
+
+    let suggestions = [];
+    if (parts.length === 1) {
+        suggestions = COMMANDS;
+    } else {
+        const cmd = parts[0];
+        if (cmd === "LIST") suggestions = ["A", "W", "U", "RE", "Y", "ID", "CELL", "ZONE_"];
+        else if (["QUERY", "PING"].includes(cmd)) suggestions = [...QUEST_OBJS, ...RESOURCES];
+    }
+
     const matches = suggestions.filter(s => s.startsWith(lastPart));
-    if (matches.length === 1) { parts[parts.length - 1] = matches[0]; input.value = parts.join(" "); updateHighlight(); playSound(400, 'sine', 0.05, 0.1); }
+    
+    if (matches.length > 0) {
+        let lcp = matches[0];
+        for (let i = 1; i < matches.length; i++) {
+            let j = 0;
+            while (j < lcp.length && j < matches[i].length && lcp[j] === matches[i][j]) {
+                j++;
+            }
+            lcp = lcp.substring(0, j);
+        }
+        
+        if (lcp.length > lastPart.length) {
+            parts[parts.length - 1] = lcp;
+            input.value = parts.join(" ");
+            updateHighlight();
+            playSound(400, 'sine', 0.05, 0.1);
+        } else if (matches.length === 1 && matches[0] === lastPart) {
+            playSound(400, 'sine', 0.03, 0.05);
+        }
+    }
 }
 
 const input = document.getElementById('input');
