@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>GTFO TERMINAL TRAINER - ULTIMATE EDITION</title>
+    <title>GTFO TERMINAL TRAINER v1.2</title>
     <style>
         :root {
             --bg: #01080e; --main: #00e5ff; --text: #ffffff;
@@ -34,11 +34,17 @@
         #exit-btn-top { left: 35px; color: #ff4d4d; border-color: rgba(255, 77, 77, 0.3); }
         #exit-btn-top:hover { background: rgba(255, 77, 77, 0.1); border-color: #ff4d4d; }
 
-        .history-dots { display: flex; justify-content: center; gap: 12px; margin-bottom: 35px; }
-        .dot { width: 35px; height: 8px; border: 1px solid var(--dim); border-radius: 10px; transition: 0.4s; background: rgba(255,255,255,0.05); }
+        .history-dots { display: flex; justify-content: center; gap: 10px; margin-bottom: 35px; }
+        .rect { 
+            width: 45px; height: 12px; 
+            border: 1px solid var(--dim); 
+            background: rgba(255,255,255,0.03); 
+            transition: 0.4s; 
+            border-radius: 2px;
+        }
 
         .stats {
-            display: flex; justify-content: flex-start; align-items: center;
+            display: flex; justify-content: space-between; align-items: center;
             padding-bottom: 15px; font-size: 0.85rem; color: var(--main);
             font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
             border-bottom: 1px solid rgba(0, 229, 255, 0.1); margin-bottom: 20px;
@@ -87,13 +93,13 @@
         }
         .main-title { font-size: 3rem; font-weight: 900; letter-spacing: -1px; color: var(--main); margin-bottom: 30px; text-align: center; text-transform: uppercase; }
         .menu-section { margin-bottom: 25px; text-align: center; }
-        .menu-label { font-size: 0.75rem; color: #5a7a8a; letter-spacing: 4px; margin-bottom: 15px; font-weight: 800; text-transform: uppercase; }
+        .menu-label { font-size: 0.75rem; color: #5a7a8a; letter-spacing: 4px; margin-bottom: 10px; font-weight: 800; text-transform: uppercase; }
         
-        .opt-group { display: flex; justify-content: center; gap: 10px; }
+        .opt-group { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
         .opt { 
-            padding: 12px 24px; cursor: pointer; border: 1px solid var(--dim); 
+            padding: 10px 20px; cursor: pointer; border: 1px solid var(--dim); 
             color: #608090; font-weight: 700; font-size: 0.85rem; border-radius: 40px;
-            transition: 0.3s; min-width: 140px; text-transform: uppercase;
+            transition: 0.3s; min-width: 100px; text-transform: uppercase;
         }
         .opt.active { border-color: var(--main); background: rgba(0, 229, 255, 0.1); color: var(--text); }
         .opt.special.active { border-color: #ff9800; color: #ff9800; background: rgba(255, 152, 0, 0.1); }
@@ -120,8 +126,17 @@
     <div id="exit-btn-top" class="ui-btn hidden" onclick="location.reload()">Выйти</div>
 
     <div id="m-screen">
-        <div class="main-title">GTFO TERMINAL TRAINER</div>
-        
+        <div class="main-title">GTFO TERMINAL TRAINER v1.2</div>
+        <div class="menu-section">
+            <div class="menu-label">Количество билетов (по 10 вопросов)</div>
+            <div class="opt-group">
+                <div class="opt" onclick="setTickets(1, this)">1 билет</div>
+                <div class="opt active" onclick="setTickets(2, this)">2 билета</div>
+                <div class="opt" onclick="setTickets(3, this)">3 билета</div>
+                <div class="opt" onclick="setTickets(4, this)">4 билета</div>
+                <div class="opt" onclick="setTickets(5, this)">5 билетов</div>
+            </div>
+        </div>
         <div class="menu-section">
             <div class="menu-label">Сложность</div>
             <div class="opt-group" id="diff-group">
@@ -130,7 +145,6 @@
                 <div class="opt" onclick="setDiff('HARD', this)">Сложно</div>
             </div>
         </div>
-
         <div class="menu-section">
             <div class="menu-label">Режим</div>
             <div class="opt-group">
@@ -138,42 +152,35 @@
                 <div class="opt" onclick="setMode('ZEN', this)">Без времени</div>
             </div>
         </div>
-
         <div class="menu-section">
             <div class="menu-label">Настройки помощи</div>
             <div class="opt-group">
                 <div id="hint-toggle" class="opt active special" onclick="toggleHighlight(this)">Подсветка ошибок: ВКЛ</div>
             </div>
         </div>
-
         <div class="menu-section">
             <div class="menu-label">Экспертные функции</div>
             <div class="opt-group">
                 <div id="hardcore-toggle" class="opt danger" onclick="toggleHardcore(this)">РЕЖИМ HARDCORE: ВЫКЛ</div>
             </div>
         </div>
-
-        <div style="text-align:center">
-            <button class="start-btn" onclick="gameStart()">НАЧАТЬ</button>
-        </div>
+        <div style="text-align:center"><button class="start-btn" onclick="gameStart()">НАЧАТЬ</button></div>
     </div>
 
     <div id="g-screen" class="hidden">
         <div class="history-dots" id="dots-panel"></div>
         <div class="stats">
+            <div>БИЛЕТ: <span id="current-ticket-text">1</span> / <span id="total-tickets-text">1</span></div>
             <div>СРЕДНЯЯ СКОРОСТЬ: <span id="avg-time">0.0</span> сек</div>
         </div>
-        
         <div id="target-cmd" class="target-box">
             <div id="cmd-text"></div>
             <div id="uplink-data" class="uplink-row hidden"></div>
         </div>
-
         <div class="bar-info">
             <div id="status-msg"></div> 
             <div id="timer-display"><span id="cur-timer">0.0</span></div>
         </div>
-        
         <div class="timer-bg"><div id="timer-bar"></div></div>
         <div class="desc-box" id="desc-text"></div>
         <div class="input-line">
@@ -181,7 +188,7 @@
             <input type="text" id="input" autocomplete="off" spellcheck="false">
         </div>
         <div style="text-align:center; margin-top:20px; height:20px">
-            <div id="enter-hint" class="blink hidden">НАЖМИТЕ [ENTER] ДЛЯ ПРОДОЛЖЕНИЯ</div>
+            <div id="enter-hint" class="blink hidden">НАЖМИТЕ [ENTER]</div>
         </div>
     </div>
 </div>
@@ -191,7 +198,7 @@ let soundEnabled = true;
 let audioCtx = null;
 
 const WORDS = ["VOID", "CORE", "RISK", "DATA", "FLOW", "SYNC", "LINK", "GRID", "NODE", "BASE", "ZULU", "DARK", "BEAM", "CELL", "BONE", "DISK", "PLUG", "GATE", "ZONE", "FAST", "DEBT", "SOUL", "GRIT", "WOLF", "ZERO", "PATH", "MIND", "SCAN", "WORK", "HELL", "DUST", "ROCK", "SHIP", "SALT", "WIND", "GOLD", "IRON", "STAY", "KILL", "LIFE", "HOPE", "RARE", "DROP", "MIST", "COAL", "GEAR", "FUEL", "TANK", "PIPE", "WIRE", "BOLT", "JUMP", "LIFT", "STOP", "LOAD", "SAVE", "EXIT", "BLUE", "FIRE", "BOMB"];
-const QUEST_OBJS = ["CELL", "TURBINE", "CARGO", "HSU", "NEONATE_HSU_", "GENERATOR", "TERMINAL", "DISINFECT_STATION"];
+const QUEST_OBJS = ["CELL", "TURBINE", "CARGO", "HSU", "NEONATE_HSU", "GENERATOR", "TERMINAL", "DISINFECT_STATION"];
 const RESOURCES = ["AMMOPACK", "MEDIPACK", "TOOL_REFILL", "DISINFECT_PACK"];
 const COMMANDS = ["LIST", "QUERY", "PING", "LOGS", "READ", "REACTOR_STARTUP", "REACTOR_SHUTDOWN", "REACTOR_VERIFY", "UPLINK_CONNECT", "UPLINK_VERIFY"];
 
@@ -201,32 +208,22 @@ const TIMERS = {
     HARD: { LIST:10, QUERY:10, PING:10, LOGS:5,  READ:10, REACTOR_STARTUP:10, REACTOR_SHUTDOWN:10, REACTOR_VERIFY:10, UPLINK_CONNECT:10, UPLINK_VERIFY:15 }
 };
 
-const LIST_LABELS = { 
-    "A": "ВСЕ ОБЪЕКТЫ И РЕСУРСЫ", 
-    "W": "КВЕСТОВЫЕ ОБЪЕКТЫ", 
-    "U": "КВЕСТОВЫЕ ОБЪЕКТЫ И РЕСУРСЫ", 
-    "RE": "РЕСУРСЫ", 
-    "Y": "КЛЮЧИ", 
-    "ID": "ПЕРСОНАЛЬНЫЕ ИДЕНТИФИКАТОРЫ", 
-    "CELL": "БАТАРЕИ" 
-};
+const LIST_LABELS = { "A": "ВСЕ ОБЪЕКТЫ", "W": "КВЕСТОВЫЕ ОБЪЕКТЫ", "U": "КВЕСТОВЫЕ ОБЪЕКТЫ И РЕСУРСЫ", "RE": "РЕСУРСЫ", "Y": "КЛЮЧИ", "ID": "ID", "CELL": "БАТАРЕИ" };
 
 let state = { 
-    diff: 'NORM', 
-    mode: 'REG', 
-    hardcore: false, 
-    showHints: true, 
-    qIndex: 0, phase: 'MENU', totalTime: 0, count: 0, errors: 0, history: [], taskBag: [], activeTask: null, timer: null, startTime: 0 
+    diff: 'NORM', mode: 'REG', tickets: 2, hardcore: false, showHints: true, 
+    qIndex: 0, totalQ: 20, phase: 'MENU', totalTime: 0, count: 0, errors: 0, 
+    history: [], masterQueue: [], activeTask: null, timer: null, startTime: 0,
+    ticketErrors: 0, ticketTime: 0, ticketCount: 0
 };
 
-function playSound(freq, type, duration, vol) {
+function playSound(f, t, d, v) {
     if (!soundEnabled) return;
     if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
-    osc.type = type; osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-    gain.gain.setValueAtTime(vol, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
-    osc.connect(gain); gain.connect(audioCtx.destination);
-    osc.start(); osc.stop(audioCtx.currentTime + duration);
+    const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
+    o.type = t; o.frequency.setValueAtTime(f, audioCtx.currentTime);
+    g.gain.setValueAtTime(v, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + d);
+    o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime + d);
 }
 
 function toggleSound() {
@@ -235,48 +232,22 @@ function toggleSound() {
     document.getElementById('sound-btn').classList.toggle('on', soundEnabled);
 }
 
-function setDiff(d, el) { 
-    if (state.mode === 'ZEN') return;
-    state.diff = d; 
-    el.parentNode.querySelectorAll('.opt').forEach(b => b.classList.remove('active')); 
-    el.classList.add('active'); 
-}
-
+function setTickets(n, el) { state.tickets = n; state.totalQ = n * 10; el.parentNode.querySelectorAll('.opt').forEach(b => b.classList.remove('active')); el.classList.add('active'); }
+function setDiff(d, el) { if (state.mode === 'ZEN') return; state.diff = d; el.parentNode.querySelectorAll('.opt').forEach(b => b.classList.remove('active')); el.classList.add('active'); }
 function setMode(m, el) { 
-    state.mode = m; 
-    el.parentNode.querySelectorAll('.opt').forEach(b => b.classList.remove('active')); 
-    el.classList.add('active'); 
-    
-    const diffOpts = document.querySelectorAll('#diff-group .opt');
-    if (m === 'ZEN') {
-        diffOpts.forEach(btn => btn.classList.add('disabled'));
-    } else {
-        diffOpts.forEach(btn => btn.classList.remove('disabled'));
-    }
+    state.mode = m; el.parentNode.querySelectorAll('.opt').forEach(b => b.classList.remove('active')); el.classList.add('active'); 
+    const dOpts = document.querySelectorAll('#diff-group .opt');
+    if (m === 'ZEN') dOpts.forEach(b => b.classList.add('disabled')); else dOpts.forEach(b => b.classList.remove('disabled'));
 }
 
 function toggleHardcore(el) { 
-    state.hardcore = !state.hardcore; 
-    el.classList.toggle('active', state.hardcore); 
-    el.innerText = `РЕЖИМ HARDCORE: ${state.hardcore ? 'ВКЛ' : 'ВЫКЛ'}`; 
-    
-    const hintBtn = document.getElementById('hint-toggle');
-    if (state.hardcore) {
-        state.showHints = false;
-        hintBtn.classList.remove('active');
-        hintBtn.innerText = `Подсветка ошибок: ВЫКЛ`;
-        hintBtn.classList.add('disabled');
-    } else {
-        hintBtn.classList.remove('disabled');
-    }
+    state.hardcore = !state.hardcore; el.classList.toggle('active', state.hardcore); el.innerText = `РЕЖИМ HARDCORE: ${state.hardcore ? 'ВКЛ' : 'ВЫКЛ'}`; 
+    const hBtn = document.getElementById('hint-toggle');
+    if (state.hardcore) { state.showHints = false; hBtn.classList.remove('active'); hBtn.innerText = `Подсветка ошибок: ВЫКЛ`; hBtn.classList.add('disabled'); }
+    else hBtn.classList.remove('disabled');
 }
 
-function toggleHighlight(el) { 
-    if (state.hardcore) return;
-    state.showHints = !state.showHints; 
-    el.classList.toggle('active', state.showHints); 
-    el.innerText = `Подсветка ошибок: ${state.showHints ? 'ВКЛ' : 'ВЫКЛ'}`; 
-}
+function toggleHighlight(el) { if (state.hardcore) return; state.showHints = !state.showHints; el.classList.toggle('active', state.showHints); el.innerText = `Подсветка ошибок: ${state.showHints ? 'ВКЛ' : 'ВЫКЛ'}`; }
 
 function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
 function genFileName() {
@@ -284,64 +255,80 @@ function genFileName() {
     return Math.random() > 0.5 ? `${s()}-${s()}-${s()}` : `REACTOR_VER${["X","Y","Z"][rand(0,2)]}${rand(1,9).toString().padStart(2,'0')}.LOG`;
 }
 
-function generateTask() {
-    if (state.taskBag.length === 0) state.taskBag = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14].sort(() => Math.random() - 0.5);
-    const id = state.taskBag.pop();
+function prepareMasterQueue() {
+    let pool = []; const types = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14];
+    while (pool.length < state.totalQ) {
+        let shuffle = [...types].sort(() => Math.random() - 0.5);
+        if (pool.length > 0 && pool[pool.length - 1] === shuffle[0]) shuffle.push(shuffle.shift());
+        pool = pool.concat(shuffle);
+    }
+    state.masterQueue = pool.slice(0, state.totalQ);
+}
+
+function generateTask(id) {
     let cmd = "", displayCmd = "", alts = [], desc = "", uplinkStr = "", tKey = "";
-    
     const zNum = rand(1, 999); const zStr = `ZONE_${zNum}`;
     const word = WORDS[rand(0, WORDS.length-1)];
-    const qObj = `${QUEST_OBJS[rand(0, QUEST_OBJS.length-1)]}${rand(1, 999)}`;
+    const qObj = `${QUEST_OBJS[rand(0, QUEST_OBJS.length-1)]}_${rand(1, 999)}`;
     const rObj = `${RESOURCES[rand(0, RESOURCES.length-1)]}_${rand(1, 999)}`;
     const useZone = Math.random() > 0.5;
 
     switch(id) {
         case 0: case 4: case 6: case 7: case 8: case 9: 
-            tKey = "LIST"; const filters = ["RE", "A", "Y", "W", "CELL", "ID", "U"];
-            const f = filters[rand(0, filters.length - 1)]; const label = LIST_LABELS[f];
+            tKey = "LIST"; const fs = ["RE", "A", "Y", "W", "CELL", "ID", "U"];
+            const f = fs[rand(0, fs.length - 1)]; const label = LIST_LABELS[f];
             cmd = useZone ? `LIST ${f} ${zStr}` : `LIST ${f}`;
-            desc = useZone ? `Узнать ${label} находящиеся в зоне ${zStr}` : `Узнать ${label} находящиеся на уровне`;
-            if (useZone) alts = [cmd, cmd.replace("ZONE_", "")];
-            displayCmd = cmd; break;
+            desc = useZone ? `Узнать ${label} в зоне ${zStr}` : `Узнать ${label} на уровне`;
+            if (useZone) alts = [cmd, cmd.replace("ZONE_", "")]; displayCmd = cmd; break;
         case 1: 
-            tKey="QUERY"; cmd=`QUERY ${qObj}`; desc=useZone?`Запросить местоположения ${qObj} в ${zStr}`:`Запросить местоположения ${qObj} на уровне`; 
-            if(useZone) { cmd += ` ${zStr}`; alts = [cmd, cmd.replace("ZONE_", "")]; }
-            displayCmd = cmd; break;
-        case 2: tKey="PING"; const pObj = Math.random()>0.5?qObj:rObj; cmd=`PING ${pObj}`; desc=`Отметить местоположение ${pObj}`; if(Math.random() < 0.5) { cmd += " -T"; desc += " (зациклить команду)"; } displayCmd = cmd; break;
+            tKey="QUERY"; cmd=`QUERY ${qObj}`; desc=useZone?`УЗНАТЬ местоположение ${qObj} в ${zStr}`:`УЗНАТЬ местоположение ${qObj} на уровне`; 
+            if(useZone) { cmd += ` ${zStr}`; alts = [cmd, cmd.replace("ZONE_", "")]; } displayCmd = cmd; break;
+        case 2: tKey="PING"; const pObj = Math.random()>0.5?qObj:rObj; cmd=`PING ${pObj}`; desc=`ОТМЕТИТЬ местоположение ${pObj}`; if(Math.random() < 0.5) { cmd += " -T"; desc += " (повторять команду)"; } displayCmd = cmd; break;
         case 3: tKey="READ"; const fn = genFileName(); cmd=`READ ${fn}`; desc=`Прочитать файл ${fn}`; displayCmd = cmd; break;
         case 5: tKey="UPLINK_VERIFY"; 
                 const tCode = ["X","Y","Z"][rand(0,2)]+rand(1,9).toString().padStart(2,'0'); 
                 let pairs = []; for(let i=0;i<6;i++){ const c = (i===0)?tCode:["X","Y","Z"][rand(0,2)]+rand(1,9).toString().padStart(2,'0'); pairs.push(`${c}:${WORDS[rand(0,WORDS.length-1)]}`); }
                 pairs.sort(()=>Math.random()-0.5); uplinkStr=pairs.join("   "); const corW=pairs.find(p=>p.startsWith(tCode)).split(":")[1];
-                cmd=`UPLINK_VERIFY ${corW}`; desc=`Подтверждение СОЗДАНИЯ ПОДКЛЮЧЕНИЯ с кодом: ${tCode}`; 
+                cmd=`UPLINK_VERIFY ${corW}`; desc=`Подтвердить СОЗДАНИЕ ПОДКЛЮЧЕНИЯ с кодом: ${tCode}`; 
                 displayCmd = `UPLINK_VERIFY ${tCode}`; alts=[cmd]; break;
-        case 10: tKey="REACTOR_VERIFY"; cmd=`REACTOR_VERIFY ${word}`; desc=`Подтверждение ЗАПУСКА РЕАКТОРА с кодом: ${word}`; displayCmd = cmd; break;
-        case 11: tKey="UPLINK_CONNECT"; const ip=`${rand(10,255)}.${rand(0,255)}.${rand(0,255)}.${rand(1,254)}`; cmd=`UPLINK_CONNECT ${ip}`; desc=`Создать подключение с ${ip}`; displayCmd = cmd; break;
-        case 12: tKey="LOGS"; cmd=`LOGS`; desc=`Вывести логи находящиеся в терминале`; displayCmd = cmd; break;
-        case 13: tKey="REACTOR_STARTUP"; cmd=`REACTOR_STARTUP`; desc=`Инициализация последовательности ЗАПУСКА реактора`; displayCmd = cmd; break;
-        case 14: tKey="REACTOR_SHUTDOWN"; cmd=`REACTOR_SHUTDOWN`; desc=`Инициализация последовательности ВЫКЛЮЧЕНИЯ реактора`; displayCmd = cmd; break;
+        case 10: tKey="REACTOR_VERIFY"; cmd=`REACTOR_VERIFY ${word}`; desc=`Подтвердить ЗАПУСК/ВЫКЛЮЧЕНИЕ РЕАКТОРА с кодом: ${word}`; displayCmd = cmd; break;
+        case 11: tKey="UPLINK_CONNECT"; const ip=`${rand(10,255)}.${rand(0,255)}.${rand(0,255)}.${rand(1,254)}`; cmd=`UPLINK_CONNECT ${ip}`; desc=`Создать соединение с IP: ${ip}`; displayCmd = cmd; break;
+        case 12: tKey="LOGS"; cmd=`LOGS`; desc=`Вывести логи терминала`; displayCmd = cmd; break;
+        case 13: tKey="REACTOR_STARTUP"; cmd=`REACTOR_STARTUP`; desc=`Инициализация ЗАПУСКА реактора`; displayCmd = cmd; break;
+        case 14: tKey="REACTOR_SHUTDOWN"; cmd=`REACTOR_SHUTDOWN`; desc=`Инициализация ВЫКЛЮЧЕНИЯ реактора`; displayCmd = cmd; break;
     }
-    
     if(alts.length === 0) alts = [cmd];
-    const finalTime = state.hardcore ? TIMERS['HARD'][tKey] : TIMERS[state.diff][tKey];
-    return { cmd, displayCmd, alts, desc, uplink: uplinkStr, time: finalTime };
+    const fTime = state.hardcore ? TIMERS['HARD'][tKey] : TIMERS[state.diff][tKey];
+    return { cmd, displayCmd, alts, desc, uplink: uplinkStr, time: fTime };
 }
 
 function updateUI() {
+    let dTicketIdx = Math.floor(state.qIndex / 10);
+    if (state.qIndex > 0 && state.qIndex % 10 === 0 && (state.phase !== 'INPUT' && state.phase !== 'TICKET_WAIT')) {
+        dTicketIdx = Math.floor((state.qIndex - 1) / 10);
+    }
+
+    document.getElementById('current-ticket-text').innerText = Math.min(dTicketIdx + 1, state.tickets);
+    document.getElementById('total-tickets-text').innerText = state.tickets;
     document.getElementById('avg-time').innerText = state.count > 0 ? (state.totalTime/state.count).toFixed(1) : "0.0";
+    
     const panel = document.getElementById('dots-panel'); panel.innerHTML = '';
     for(let i=0; i<10; i++) {
-        const d = document.createElement('div'); d.className = 'dot';
-        if(state.history[i] !== undefined) {
-            d.style.backgroundColor = state.history[i] ? 'var(--success)' : 'var(--err)';
-            d.style.boxShadow = `0 0 10px ${state.history[i] ? 'var(--success)' : 'var(--err)'}`;
+        const rect = document.createElement('div'); rect.className = 'rect';
+        const gIdx = (dTicketIdx * 10) + i;
+        if(state.history[gIdx] !== undefined) {
+            const isOk = state.history[gIdx];
+            rect.style.backgroundColor = isOk ? 'var(--success)' : 'var(--err)';
+            rect.style.boxShadow = `0 0 15px ${isOk ? 'var(--success)' : 'var(--err)'}`;
+            rect.style.borderColor = isOk ? 'var(--success)' : 'var(--err)';
         }
-        panel.appendChild(d);
+        panel.appendChild(rect);
     }
 }
 
 function gameStart() {
     state.qIndex = 0; state.history = []; state.totalTime = 0; state.count = 0; state.errors = 0;
+    prepareMasterQueue();
     document.getElementById('m-screen').classList.add('hidden');
     document.getElementById('g-screen').classList.remove('hidden');
     document.getElementById('exit-btn-top').classList.remove('hidden');
@@ -349,23 +336,21 @@ function gameStart() {
 }
 
 function nextTask() {
-    if (state.qIndex >= 10) { finishSession(); return; }
-    state.phase = 'INPUT'; state.activeTask = generateTask(); state.startTime = Date.now();
-    
-    document.getElementById('cmd-text').innerText = (state.hardcore) ? "[ДАННЫЕ ЗАШИФРОВАНЫ]" : state.activeTask.displayCmd;
+    if (state.qIndex >= state.totalQ) { finishSession(); return; }
+    if (state.qIndex % 10 === 0) { state.ticketErrors = 0; state.ticketTime = 0; state.ticketCount = 0; }
+    state.phase = 'INPUT'; 
+    state.activeTask = generateTask(state.masterQueue[state.qIndex]); 
+    state.startTime = Date.now();
+    document.getElementById('cmd-text').innerText = state.hardcore ? "[ЗАШИФРОВАНО]" : state.activeTask.displayCmd;
     document.getElementById('desc-text').innerText = state.activeTask.desc;
-    
     const upBox = document.getElementById('uplink-data');
-    if(state.activeTask.uplink) { upBox.innerText = state.activeTask.uplink; upBox.classList.remove('hidden'); }
-    else { upBox.classList.add('hidden'); }
-    
+    if(state.activeTask.uplink) { upBox.innerText = state.activeTask.uplink; upBox.classList.remove('hidden'); } else upBox.classList.add('hidden');
     document.getElementById('status-msg').innerText = ""; document.getElementById('enter-hint').classList.add('hidden');
     document.getElementById('timer-bar').className = ''; document.getElementById('timer-bar').style.width = '100%';
     document.getElementById('input').value = ''; document.getElementById('input').disabled = false; document.getElementById('input').focus();
     document.getElementById('highlight-layer').innerHTML = '';
-    
-    if(state.mode !== 'ZEN') startTimer(state.activeTask.time);
-    else document.getElementById('cur-timer').innerText = "---";
+    if(state.mode !== 'ZEN') startTimer(state.activeTask.time); else document.getElementById('cur-timer').innerText = "---";
+    updateUI();
 }
 
 function startTimer(sec) {
@@ -378,109 +363,108 @@ function startTimer(sec) {
             clearInterval(state.timer); state.phase = 'TIMEOUT';
             document.getElementById('input').disabled = true;
             document.getElementById('status-msg').innerText = "ВРЕМЯ ВЫШЛО"; document.getElementById('status-msg').style.color = "var(--err)";
-            document.getElementById('enter-hint').classList.remove('hidden');
-            state.history.push(false); state.errors++; updateUI(); state.qIndex++;
-            playSound(150, 'sawtooth', 0.4, 0.1);
+            document.getElementById('enter-hint').innerText = "ENTER - ПРОДОЛЖИТЬ"; document.getElementById('enter-hint').classList.remove('hidden');
+            state.history.push(false); state.errors++; state.ticketErrors++; state.qIndex++; updateUI(); playSound(150, 'sawtooth', 0.4, 0.1);
         }
     }, 50);
 }
 
 function checkResult(val) {
-    const spentTime = (Date.now() - state.startTime) / 1000;
+    const sTime = (Date.now() - state.startTime) / 1000;
     state.phase = 'CHECKING'; clearInterval(state.timer);
     document.getElementById('input').disabled = true;
-    document.getElementById('cur-timer').innerText = spentTime.toFixed(1) + " сек";
-    const bar = document.getElementById('timer-bar'); const statusBox = document.getElementById('status-msg');
-    statusBox.innerText = "ПРОВЕРКА..."; statusBox.style.color = "var(--check-color)"; bar.style.width = '0%';
-    
+    const bar = document.getElementById('timer-bar'); const sBox = document.getElementById('status-msg');
+    sBox.innerText = "ПРОВЕРКА..."; sBox.style.color = "var(--check-color)"; bar.style.width = '0%';
     setTimeout(() => {
         bar.className = 'checking'; bar.style.width = '100%';
         setTimeout(() => {
             state.phase = 'RESULT';
             const isOk = state.activeTask.alts.includes(val.trim().toUpperCase());
             if(isOk) {
-                state.count++; state.totalTime += spentTime; state.history.push(true);
-                statusBox.innerText = "УСПЕХ"; statusBox.style.color = "var(--success)"; bar.className = 'success'; playSound(880, 'sine', 0.1, 0.1);
+                state.count++; state.totalTime += sTime; state.ticketCount++; state.ticketTime += sTime;
+                state.history.push(true); sBox.innerText = "УСПЕХ"; sBox.style.color = "var(--success)"; bar.className = 'success'; playSound(880, 'sine', 0.1, 0.1);
             } else {
-                state.errors++; state.history.push(false);
-                statusBox.innerText = "ОШИБКА"; statusBox.style.color = "var(--err)";
-                bar.className = 'error'; playSound(150, 'sawtooth', 0.3, 0.1); showDiff(val);
+                state.errors++; state.ticketErrors++; state.history.push(false);
+                sBox.innerText = "ОШИБКА"; sBox.style.color = "var(--err)"; bar.className = 'error'; playSound(150, 'sawtooth', 0.3, 0.1); showDiff(val);
             }
-            updateUI(); state.qIndex++; document.getElementById('enter-hint').classList.remove('hidden');
+            state.qIndex++; updateUI(); 
+            if (state.qIndex % 10 === 0 && state.qIndex < state.totalQ) {
+                state.phase = 'TICKET_END'; document.getElementById('enter-hint').innerText = "ENTER - СТАТИСТИКА БИЛЕТА";
+            } else if (state.qIndex >= state.totalQ) {
+                state.phase = 'FINISH_PENDING'; document.getElementById('enter-hint').innerText = "ENTER - ЗАВЕРШИТЬ СЕССИЮ";
+            } else {
+                document.getElementById('enter-hint').innerText = "ENTER - СЛЕДУЮЩИЙ ВОПРОС";
+            }
+            document.getElementById('enter-hint').classList.remove('hidden');
         }, 800);
     }, 50);
 }
 
-function showDiff(val) {
-    const tgt = state.activeTask.alts[0]; let h = "";
-    for(let i=0; i<Math.max(tgt.length, val.length); i++) {
-        if(i < val.length) h += (i < tgt.length && val[i].toUpperCase() === tgt[i]) ? `<span style="color:transparent">${val[i]}</span>` : `<span class="char-err">${val[i]}</span>`;
-        else h += `<span style="color:rgba(255,255,255,0.15)">${tgt[i]}</span>`;
-    }
-    document.getElementById('highlight-layer').innerHTML = h;
+function showTicketEnd() {
+    const tNum = state.qIndex / 10;
+    document.getElementById('cmd-text').innerText = `БИЛЕТ №${tNum} ЗАВЕРШЕН`;
+    const aT = state.ticketCount > 0 ? (state.ticketTime / state.ticketCount).toFixed(1) : "0.0";
+    document.getElementById('desc-text').innerText = `ОШИБОК: ${state.ticketErrors} | СКОРОСТЬ: ${aT} сек`;
+    document.getElementById('status-msg').innerText = "ПАУЗА"; document.getElementById('status-msg').style.color = "var(--main)";
+    document.getElementById('uplink-data').classList.add('hidden');
+    document.getElementById('enter-hint').innerText = "ENTER - СЛЕДУЮЩИЙ БИЛЕТ";
 }
 
 function finishSession() {
     state.phase = 'FINISH';
     document.getElementById('cmd-text').innerText = "СЕССИЯ ЗАВЕРШЕНА";
-    document.getElementById('desc-text').innerText = `ОШИБОК: ${state.errors} | СРЕДНЯЯ СКОРОСТЬ: ${(state.totalTime/state.count || 0).toFixed(1)} сек`;
-    document.getElementById('uplink-data').classList.add('hidden');
-    document.getElementById('enter-hint').innerText = "ENTER - ПЕРЕЗАПУСК"; document.getElementById('enter-hint').classList.remove('hidden');
+    const tA = state.count > 0 ? (state.totalTime / state.count).toFixed(1) : "0.0";
+    document.getElementById('desc-text').innerText = `ИТОГО ОШИБОК: ${state.errors} | СРЕДНЯЯ СКОРОСТЬ: ${tA} сек`;
+    document.getElementById('status-msg').innerText = "КОНЕЦ";
+    document.getElementById('enter-hint').innerText = "ENTER - В МЕНЮ";
 }
 
 function updateHighlight() {
     if(state.phase !== 'INPUT') return;
-    const val = input.value.toUpperCase(); const alts = state.activeTask.alts;
-    const isValidStart = alts.some(a => a.startsWith(val));
-    
-    if (!state.showHints) {
-        document.getElementById('highlight-layer').innerHTML = `<span style="color:transparent">${val}</span>`;
-        return;
-    }
-
-    if(isValidStart) { document.getElementById('highlight-layer').innerHTML = `<span style="color:transparent">${val}</span>`; }
+    const v = input.value.toUpperCase(); const alts = state.activeTask.alts;
+    if (!state.showHints) { document.getElementById('highlight-layer').innerHTML = `<span style="color:transparent">${v}</span>`; return; }
+    if(alts.some(a => a.startsWith(v))) document.getElementById('highlight-layer').innerHTML = `<span style="color:transparent">${v}</span>`;
     else {
-        let best = 0; alts.forEach(a => { let m=0; for(let i=0;i<val.length;i++){if(val[i]===a[i])m++;else break;} if(m>best)best=m; });
-        document.getElementById('highlight-layer').innerHTML = `<span style="color:transparent">${val.substring(0,best)}</span><span class="char-err">${val.substring(best)}</span>`;
+        let b = 0; alts.forEach(a => { let m=0; for(let i=0;i<v.length;i++){if(v[i]===a[i])m++;else break;} if(m>b)b=m; });
+        document.getElementById('highlight-layer').innerHTML = `<span style="color:transparent">${v.substring(0,b)}</span><span class="char-err">${v.substring(b)}</span>`;
     }
 }
 
 function handleTab() {
-    const val = input.value.toUpperCase();
-    const parts = val.split(" ");
-    const lastPart = parts[parts.length - 1];
-    if (!lastPart && val.length > 0) return;
-
+    const v = input.value.toUpperCase(); const ps = v.split(" "); const lp = ps[ps.length - 1];
+    if (!lp && v.length > 0) return;
     let suggestions = [];
-    if (parts.length === 1) {
+    if (ps.length === 1) {
         suggestions = COMMANDS;
     } else {
-        const cmd = parts[0];
+        const cmd = ps[0];
         if (cmd === "LIST") suggestions = ["A", "W", "U", "RE", "Y", "ID", "CELL", "ZONE_"];
-        else if (["QUERY", "PING"].includes(cmd)) suggestions = [...QUEST_OBJS, ...RESOURCES];
+        else if (["QUERY", "PING"].includes(cmd)) suggestions = [...QUEST_OBJS, ...RESOURCES].map(s => s + "_");
     }
-
-    const matches = suggestions.filter(s => s.startsWith(lastPart));
-    
+    const matches = suggestions.filter(s => s.startsWith(lp));
     if (matches.length > 0) {
         let lcp = matches[0];
-        for (let i = 1; i < matches.length; i++) {
-            let j = 0;
-            while (j < lcp.length && j < matches[i].length && lcp[j] === matches[i][j]) {
-                j++;
+        if (matches.length > 1) {
+            for (let i = 1; i < matches.length; i++) {
+                let j = 0; while (j < lcp.length && j < matches[i].length && lcp[j] === matches[i][j]) j++;
+                lcp = lcp.substring(0, j);
             }
-            lcp = lcp.substring(0, j);
         }
-        
-        if (lcp.length > lastPart.length) {
-            parts[parts.length - 1] = lcp;
-            input.value = parts.join(" ");
-            updateHighlight();
-            playSound(400, 'sine', 0.05, 0.1);
-        } else if (matches.length === 1 && matches[0] === lastPart) {
-            playSound(400, 'sine', 0.03, 0.05);
+        if (lcp.length > lp.length) {
+            ps[ps.length - 1] = lcp;
+            input.value = ps.join(" ");
+            updateHighlight(); playSound(400, 'sine', 0.05, 0.1);
         }
     }
+}
+
+function showDiff(val) {
+    const t = state.activeTask.alts[0]; let h = "";
+    for(let i=0; i<Math.max(t.length, val.length); i++) {
+        if(i < val.length) h += (i < t.length && val[i].toUpperCase() === t[i]) ? `<span style="color:transparent">${val[i]}</span>` : `<span class="char-err">${val[i]}</span>`;
+        else h += `<span style="color:rgba(255,255,255,0.15)">${t[i]}</span>`;
+    }
+    document.getElementById('highlight-layer').innerHTML = h;
 }
 
 const input = document.getElementById('input');
@@ -489,8 +473,16 @@ window.onkeydown = (e) => {
     if(state.phase === 'INPUT') {
         if(e.key === 'Tab') { e.preventDefault(); handleTab(); }
         if(e.key === 'Enter' && input.value) checkResult(input.value);
-    } else if (['RESULT','FINISH','TIMEOUT'].includes(state.phase)) {
-        if(e.key === 'Enter') state.phase === 'FINISH' ? location.reload() : nextTask();
+    } else if (state.phase === 'RESULT' || state.phase === 'TIMEOUT') {
+        if(e.key === 'Enter') nextTask();
+    } else if (state.phase === 'TICKET_END') {
+        if(e.key === 'Enter') { showTicketEnd(); state.phase = 'TICKET_WAIT'; }
+    } else if (state.phase === 'TICKET_WAIT') {
+        if(e.key === 'Enter') nextTask();
+    } else if (state.phase === 'FINISH_PENDING') {
+        if(e.key === 'Enter') finishSession();
+    } else if (state.phase === 'FINISH') {
+        if(e.key === 'Enter') location.reload();
     }
     input.focus();
 };
